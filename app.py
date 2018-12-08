@@ -62,5 +62,25 @@ async def background_task(req, resp):
     print('return greeting')
     resp.text = 'received.'
 
+# Classでルートを定義する。
+@api.route('/images')
+class Images:
+    def on_get(self, req, resp):
+        resp.media = [
+            { 'id': 1, 'name': 'image1.png' },
+            { 'id': 2, 'name': 'image2.png' }
+        ]
+    
+    async def on_post(self, req, resp):
+        data = await req.media()
+        print(data)
+        resp.media = data
+        resp.status_code = 201
+
+@api.route('/images/{id}')
+class Image:
+    def on_get(self, req, resp, *, id):
+        resp.media = { 'id': id, 'name': f'image{id}.png'}
+
 if __name__ == '__main__':
     api.run(port=5000)
