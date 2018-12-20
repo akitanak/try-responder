@@ -81,6 +81,26 @@ class Images:
 class Image:
     def on_get(self, req, resp, *, id):
         resp.media = { 'id': id, 'name': f'image{id}.png'}
+    
+    async def on_put(self, req, resp, *, id):
+        data = await req.media()
+        resp.media = data
+        resp.status_code = 200
+
+# GraphQL
+import graphene
+
+class Query(graphene.ObjectType):
+    task = graphene.String(taskName=graphene.String(default_value="empty"))
+
+    def resolve_task(self, info, taskName):
+        print(info)
+        return f'task: {taskName}'
+
+schema = graphene.Schema(query=Query)
+view = responder.ext.GraphQLView(api=api, schema=schema)
+
+api.add_route('/graph', view)
 
 if __name__ == '__main__':
     api.run(port=5000)
