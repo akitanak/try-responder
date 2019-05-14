@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import responder
 import time
 
@@ -5,6 +7,7 @@ api = responder.API()
 
 @api.route('/status')
 def status(req, resp):
+    resp.status_code = api.status_codes.HTTP_200
     resp.text = "I'm fine. Thank you."
 
 # パスから引数を受け取る
@@ -101,6 +104,29 @@ schema = graphene.Schema(query=Query)
 view = responder.ext.GraphQLView(api=api, schema=schema)
 
 api.add_route('/graph', view)
+
+@api.on_event('startup')
+async def startup():
+    print('start up my server.')
+
+@api.on_event('shutdown')
+async def shutdown():
+    print('shutdown my server.')
+
+
+# NOTE: Responder のドキュメントを見ると、on_event の event_type として cleanup, tick も記述されているが、
+#       実装を見ると実際の処理は add_event_handler に委譲されており、今の所 startup と shutdown にのみ対応しているようだ。
+
+# @api.on_event('cleanup')
+# async def cleanup():
+#     print('cleanup')
+
+# @api.on_event('tick', seconds=10)
+# async def tick():
+#     print(datetime.now())
+
+# api.add_event_handler('startup', startup)
+# api.add_event_handler('shutdown', shutdown)
 
 if __name__ == '__main__':
     api.run(port=5000)
